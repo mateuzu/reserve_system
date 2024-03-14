@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
@@ -27,6 +28,7 @@ public class ReserveService {
 	private UserRepository userRepository;
 	private RoomRepository roomRepository;
 	
+	@Autowired
 	public ReserveService(ReserveRepository reserveRepository, UserRepository userRepository, RoomRepository roomRepository) {
 		this.reserveRepository = reserveRepository;
 		this.userRepository = userRepository;
@@ -68,12 +70,19 @@ public class ReserveService {
 	
 	public Reserve getReserveById(String reserveId) {
 		var reserve = reserveRepository.findById(UUID.fromString(reserveId)).orElseThrow(() -> new ObjectNotFoundException("Reserva com Id informado não foi encontrada"));
+		checkExpiredReservation(reserve);
 		return reserve;
 	}
 	
 	public List<Reserve> listAll(){
 		var list = reserveRepository.findAll();
 		list.forEach(this::checkExpiredReservation);
+		return list;
+	}
+	
+	public List<ReserveResponseDto> listAllByUser(String userId){
+		var user = userRepository.findById(UUID.fromString(userId)).orElseThrow(() -> new ObjectNotFoundException("Usuário com Id informado não foi encontrado"));
+		var list = user.getReserves().stream().map(reserve -> new ReserveResponseDto(user.getName(), reserve.getRoom().getName(), reserve.getEndDate(), reserve.getTotalPrice())).toList();
 		return list;
 	}
 	

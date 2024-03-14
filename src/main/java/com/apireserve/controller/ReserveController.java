@@ -44,6 +44,12 @@ public class ReserveController {
 		return ResponseEntity.ok().body(reserveService.listAll());
 	}
 	
+	@GetMapping("/user/{userId}")
+	public ResponseEntity<List<ReserveResponseDto>> listAllReservesByUser(@PathVariable("userId")String userId){
+		var list = reserveService.listAllByUser(userId);
+		return ResponseEntity.ok().body(list);
+	}
+	
 	@DeleteMapping("/delete/{reserveId}")
 	public ResponseEntity<Void> deleteReserveById(@PathVariable("reserveId") String reserveId){
 		reserveService.deleteById(reserveId);
